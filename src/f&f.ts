@@ -1,5 +1,6 @@
 import { writeFile } from 'fs/promises';
 import { Page } from 'puppeteer';
+import { outputDir } from '.';
 
 export const fastAndFuriousGIFsURLs = [
   'https://giphy.com/gifs/thefastsaga-fast-and-furious-tokyo-drift-qJkf6mnJtQaYArjNPJ',
@@ -124,12 +125,11 @@ export const fastAndFuriousGIFsURLs = [
   'https://giphy.com/gifs/thefastsaga-fast-and-furious-tokyo-drift-e7B9RDt1ck7IKioykp'
 ];
 
-export async function downloadGIF(page: Page) {
+export async function downloadGIF(page: Page, outputName: string) {
   const videoElement = await page.$('video');
 
   if (videoElement === null) {
-    console.error(`Video element not found: ${page.url()}`);
-    return;
+    return `Video element not found: ${page.url()}`;
   }
 
   const src = await videoElement.getProperty('src');
@@ -139,24 +139,20 @@ export async function downloadGIF(page: Page) {
   const gifUrl = (await page.$$('img')).at(1)?.getProperty('src');
 
   if (gifUrl === undefined) {
-    console.error(`Gif URL not found: ${page.url()}`);
-    return;
+    return `Gif URL not found: ${page.url()}`;
   }
 
   const gif = await page.goto(await (await gifUrl).jsonValue());
 
   if (gif === null) {
-    console.error(`Gif not found: ${page.url()}`);
-    return;
+    return `Gif not found: ${page.url()}`;
   }
 
-  const name = `${crypto.randomUUID()}.gif`;
-
-  console.log(`Writing ${name}`);
+  console.log(`Writing ${outputName}`);
 
   const startTime = Date.now();
 
-  await writeFile(`./gifs/${name}`, await gif.buffer());
+  await writeFile(`${outputDir}/${outputName}`, await gif.buffer());
 
   console.log(`Finished in ${Date.now() - startTime} ms`);
 }
