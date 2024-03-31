@@ -1,5 +1,5 @@
 import { writeFile } from 'fs/promises';
-import { Page } from 'puppeteer';
+import { Page } from 'puppeteer-core';
 import { outputDir } from '.';
 
 export const fastAndFuriousGIFsURLs = [

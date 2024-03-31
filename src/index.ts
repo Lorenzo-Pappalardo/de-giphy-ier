@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { access } from 'fs/promises';
-import puppeteer, { Browser, Page } from 'puppeteer';
+import puppeteer, { Browser, Page } from 'puppeteer-core';
 import { downloadGIF, fastAndFuriousGIFsURLs } from './f&f';
 
 export const outputDir = './gifs';
