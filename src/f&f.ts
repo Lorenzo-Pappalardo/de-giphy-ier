@@ -1,4 +1,7 @@
-const urls = [
+import { writeFile } from 'fs/promises';
+import { Page } from 'puppeteer';
+
+export const fastAndFuriousGIFsURLs = [
   'https://giphy.com/gifs/thefastsaga-fast-and-furious-tokyo-drift-qJkf6mnJtQaYArjNPJ',
   'https://giphy.com/gifs/thefastsaga-tokyo-drift-the-fast-and-furious-3-ey9vrRocU2fNfjmrsA',
   'https://giphy.com/gifs/thefastsaga-fast-and-furious-tokyo-drift-GKSFoV6HM3Qt4oiEJJ',
@@ -121,4 +124,39 @@ const urls = [
   'https://giphy.com/gifs/thefastsaga-fast-and-furious-tokyo-drift-e7B9RDt1ck7IKioykp'
 ];
 
-export default urls;
+export async function downloadGIF(page: Page) {
+  const videoElement = await page.$('video');
+
+  if (videoElement === null) {
+    console.error(`Video element not found: ${page.url()}`);
+    return;
+  }
+
+  const src = await videoElement.getProperty('src');
+
+  await page.goto(await src.jsonValue());
+
+  const gifUrl = (await page.$$('img')).at(1)?.getProperty('src');
+
+  if (gifUrl === undefined) {
+    console.error(`Gif URL not found: ${page.url()}`);
+    return;
+  }
+
+  const gif = await page.goto(await (await gifUrl).jsonValue());
+
+  if (gif === null) {
+    console.error(`Gif not found: ${page.url()}`);
+    return;
+  }
+
+  const name = `${crypto.randomUUID()}.gif`;
+
+  console.log(`Writing ${name}`);
+
+  const startTime = Date.now();
+
+  await writeFile(`./gifs/${name}`, await gif.buffer());
+
+  console.log(`Finished in ${Date.now() - startTime} ms`);
+}
